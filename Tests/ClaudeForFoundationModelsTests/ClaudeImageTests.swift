@@ -12,15 +12,18 @@ import UniformTypeIdentifiers
 @Suite struct ClaudeImageTests {
   // MARK: - Resize math
 
+  @available(iOS 27.0, macOS 27.0, visionOS 27.0, watchOS 27.0, *)
   @Test func `the long-edge target leaves a small image untouched`() {
     #expect(ClaudeImage.targetLongEdge(width: 800, height: 600) == 800)
   }
 
+  @available(iOS 27.0, macOS 27.0, visionOS 27.0, watchOS 27.0, *)
   @Test func `a wide image is clamped to the long-edge cap`() {
     // 4000×1000 is under the pixel budget but over the long-edge cap.
     #expect(ClaudeImage.targetLongEdge(width: 4000, height: 1000) == ClaudeImage.maxLongEdge)
   }
 
+  @available(iOS 27.0, macOS 27.0, visionOS 27.0, watchOS 27.0, *)
   @Test func `a square image is clamped by the pixel budget, not the long edge`() {
     // 2000×2000 = 4 MP. Both caps bite; the pixel budget is tighter, so the
     // long edge lands below maxLongEdge.
@@ -31,6 +34,7 @@ import UniformTypeIdentifiers
 
   // MARK: - Normalization
 
+  @available(iOS 27.0, macOS 27.0, visionOS 27.0, watchOS 27.0, *)
   @Test func `an oversized photo is downscaled within both caps`() throws {
     let image = try ClaudeImage(source: pngData(width: 4032, height: 3024))
     let (width, height) = try dimensions(of: image.data)
@@ -39,12 +43,14 @@ import UniformTypeIdentifiers
     #expect(image.data.count <= ClaudeImage.maxByteCount)
   }
 
+  @available(iOS 27.0, macOS 27.0, visionOS 27.0, watchOS 27.0, *)
   @Test func `a downscaled image is re-encoded as jpeg`() throws {
     let image = try ClaudeImage(source: pngData(width: 4032, height: 3024))
     #expect(image.mediaType == "image/jpeg")
     #expect(ClaudeImage.supportedMediaTypes.contains(image.mediaType))
   }
 
+  @available(iOS 27.0, macOS 27.0, visionOS 27.0, watchOS 27.0, *)
   @Test func `an in-limits png keeps its format and dimensions`() throws {
     let image = try ClaudeImage(source: pngData(width: 640, height: 480))
     #expect(image.mediaType == "image/png")
@@ -55,6 +61,7 @@ import UniformTypeIdentifiers
 
   // MARK: - Metadata
 
+  @available(iOS 27.0, macOS 27.0, visionOS 27.0, watchOS 27.0, *)
   @Test func `an in-limits jpeg loses its camera metadata but keeps its orientation`() throws {
     let original = imageData(
       type: .jpeg,
@@ -83,6 +90,7 @@ import UniformTypeIdentifiers
     #expect(orientation == 6)
   }
 
+  @available(iOS 27.0, macOS 27.0, visionOS 27.0, watchOS 27.0, *)
   @Test func `the downscale path also drops camera metadata`() throws {
     let original = imageData(
       type: .jpeg,
@@ -97,6 +105,7 @@ import UniformTypeIdentifiers
     #expect(exif[kCGImagePropertyExifDateTimeOriginal] == nil)
   }
 
+  @available(iOS 27.0, macOS 27.0, visionOS 27.0, watchOS 27.0, *)
   @Test func `the aspect ratio is preserved through a downscale`() throws {
     let image = try ClaudeImage(source: pngData(width: 4000, height: 1000))
     let (width, height) = try dimensions(of: image.data)
@@ -104,6 +113,7 @@ import UniformTypeIdentifiers
     #expect(abs(Double(width) / Double(height) - 4.0) < 0.05)
   }
 
+  @available(iOS 27.0, macOS 27.0, visionOS 27.0, watchOS 27.0, *)
   @Test func `non-image data throws undecodable`() {
     #expect(throws: ClaudeImage.Error.self) {
       try ClaudeImage(source: Data("not an image".utf8))
@@ -113,12 +123,14 @@ import UniformTypeIdentifiers
   // MARK: - Helpers
 
   /// A solid-color PNG of the given pixel size.
+  @available(iOS 27.0, macOS 27.0, visionOS 27.0, watchOS 27.0, *)
   private func pngData(width: Int, height: Int) -> Data {
     imageData(type: .png, width: width, height: height)
   }
 
   /// A solid-color image of the given pixel size and container format, with
   /// optional container metadata (orientation, EXIF, GPS, TIFF).
+  @available(iOS 27.0, macOS 27.0, visionOS 27.0, watchOS 27.0, *)
   private func imageData(
     type: UTType,
     width: Int,
@@ -153,6 +165,7 @@ import UniformTypeIdentifiers
 
   /// Location, capture time, and device identifiers as a camera capture
   /// carries them — the data ``ClaudeImage`` must keep off the wire.
+  @available(iOS 27.0, macOS 27.0, visionOS 27.0, watchOS 27.0, *)
   private func cameraMetadata(orientation: UInt32) -> [CFString: Any] {
     [
       kCGImagePropertyOrientation: orientation,
@@ -173,6 +186,7 @@ import UniformTypeIdentifiers
     ]
   }
 
+  @available(iOS 27.0, macOS 27.0, visionOS 27.0, watchOS 27.0, *)
   private func imageProperties(of data: Data) throws -> [CFString: Any] {
     let source = try #require(CGImageSourceCreateWithData(data as CFData, nil))
     return try #require(
@@ -180,6 +194,7 @@ import UniformTypeIdentifiers
     )
   }
 
+  @available(iOS 27.0, macOS 27.0, visionOS 27.0, watchOS 27.0, *)
   private func dimensions(of data: Data) throws -> (width: Int, height: Int) {
     let properties = try imageProperties(of: data)
     let width = try #require(properties[kCGImagePropertyPixelWidth] as? Int)

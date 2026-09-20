@@ -13,6 +13,7 @@ import Testing
 /// is where issue #7 (empty reasoning segments) manifests.
 @Suite struct ReasoningTranscriptTests {
 
+  @available(iOS 27.0, macOS 27.0, visionOS 27.0, watchOS 27.0, *)
   @Test func `thinking stream produces a reasoning entry with text segments`() async throws {
     let model = StubbedClaudeModel(
       fixture: thinkingTurnSSE(thinkingDeltas: ["Let me think. ", "Okay."])
@@ -33,6 +34,7 @@ import Testing
   /// `omitted` (Sonnet 5, Opus 4.7+), the API streams thinking blocks with no
   /// text deltas — only a signature. The transcript then carries a reasoning
   /// entry with zero text segments.
+  @available(iOS 27.0, macOS 27.0, visionOS 27.0, watchOS 27.0, *)
   @Test func `signature-only thinking stream yields a reasoning entry with no text`() async throws {
     let model = StubbedClaudeModel(fixture: thinkingTurnSSE(thinkingDeltas: []))
     let session = LanguageModelSession(model: model)
@@ -49,6 +51,7 @@ import Testing
 
   // A redacted thought has nothing to show but must go back byte for byte:
   // it surfaces as a text-less reasoning entry carrying the block.
+  @available(iOS 27.0, macOS 27.0, visionOS 27.0, watchOS 27.0, *)
   @Test func `redacted thinking round-trips to a redacted_thinking replay`() async throws {
     let payload = Data([0xDE, 0xAD, 0xBE, 0xEF])
     let model = StubbedClaudeModel(fixture: redactedThinkingTurnSSE(payload: payload))

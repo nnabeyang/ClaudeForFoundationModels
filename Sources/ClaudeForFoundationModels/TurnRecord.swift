@@ -142,6 +142,7 @@ extension TurnRecord {
 
   /// The blocks recorded on a model entry — for a tool-calls entry, on each
   /// of its calls.
+  @available(iOS 27.0, macOS 27.0, visionOS 27.0, watchOS 27.0, *)
   init(of entry: Transcript.Entry) {
     switch entry {
     case .response(let response): self.init(metadata: response.metadata)

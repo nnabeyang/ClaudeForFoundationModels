@@ -11,6 +11,7 @@ import Testing
 @Suite struct ClaudeServerToolActivityTests {
   private let exampleURL = URL(string: "https://example.com")!
 
+  @available(iOS 27.0, macOS 27.0, visionOS 27.0, watchOS 27.0, *)
   @Test func `a web search pairs its results by id`() throws {
     let activity = ClaudeServerToolActivity.derive(
       from: record([
@@ -44,6 +45,7 @@ import Testing
     #expect(first.toolName == "web_search")
   }
 
+  @available(iOS 27.0, macOS 27.0, visionOS 27.0, watchOS 27.0, *)
   @Test func `a call without a result has no outcome`() {
     let activity = ClaudeServerToolActivity.derive(
       from: record([
@@ -56,6 +58,7 @@ import Testing
     )
   }
 
+  @available(iOS 27.0, macOS 27.0, visionOS 27.0, watchOS 27.0, *)
   @Test func `tool errors become failures`() {
     let activity = ClaudeServerToolActivity.derive(
       from: record([
@@ -86,6 +89,7 @@ import Testing
     )
   }
 
+  @available(iOS 27.0, macOS 27.0, visionOS 27.0, watchOS 27.0, *)
   @Test func `web fetch and code execution results decode`() {
     let activity = ClaudeServerToolActivity.derive(
       from: record([
@@ -138,6 +142,7 @@ import Testing
     )
   }
 
+  @available(iOS 27.0, macOS 27.0, visionOS 27.0, watchOS 27.0, *)
   @Test func `the code execution tool's shell calls read as code execution`() throws {
     let activity = ClaudeServerToolActivity.derive(
       from: record([
@@ -179,6 +184,7 @@ import Testing
     #expect(activity.first?.toolName == "bash_code_execution")
   }
 
+  @available(iOS 27.0, macOS 27.0, visionOS 27.0, watchOS 27.0, *)
   @Test func `an unknown tool surfaces by name`() throws {
     let activity = ClaudeServerToolActivity.derive(
       from: record([
@@ -198,6 +204,7 @@ import Testing
     #expect(activity.first?.toolName == "future_tool")
   }
 
+  @available(iOS 27.0, macOS 27.0, visionOS 27.0, watchOS 27.0, *)
   @Test func `a known tool whose result doesn't decode is demoted rather than dropped`() throws {
     let activity = ClaudeServerToolActivity.derive(
       from: record([
@@ -213,6 +220,7 @@ import Testing
     )
   }
 
+  @available(iOS 27.0, macOS 27.0, visionOS 27.0, watchOS 27.0, *)
   @Test func `a hit whose url doesn't parse is dropped, not the whole result`() throws {
     let activity = ClaudeServerToolActivity.derive(
       from: record([
@@ -239,6 +247,7 @@ import Testing
     )
   }
 
+  @available(iOS 27.0, macOS 27.0, visionOS 27.0, watchOS 27.0, *)
   @Test func `results are paired across turns by the transcript but not by one response`() throws {
     // The model called a client tool alongside the search, so the result
     // arrived in the following response.
@@ -278,6 +287,7 @@ import Testing
     #expect(first.claudeServerToolActivity(for: .text(.init(id: "srv_1", content: "prose"))) == nil)
   }
 
+  @available(iOS 27.0, macOS 27.0, visionOS 27.0, watchOS 27.0, *)
   @Test func `text and client tool blocks are not activity`() {
     let activity = ClaudeServerToolActivity.derive(
       from: record([

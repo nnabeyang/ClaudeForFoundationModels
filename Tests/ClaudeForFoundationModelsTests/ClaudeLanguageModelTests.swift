@@ -12,6 +12,7 @@ import DeviceCheck
 #endif
 
 @Suite struct ClaudeLanguageModelTests {
+  @available(iOS 27.0, macOS 27.0, visionOS 27.0, watchOS 27.0, *)
   @Test func `advertised capabilities follow the model's declared capabilities`() {
     let full = ClaudeLanguageModel(name: .sonnet4_6, auth: .apiKey("k"))
     #expect(full.capabilities.contains(.toolCalling))
@@ -20,6 +21,7 @@ import DeviceCheck
     #expect(full.capabilities.contains(.guidedGeneration))
   }
 
+  @available(iOS 27.0, macOS 27.0, visionOS 27.0, watchOS 27.0, *)
   @Test func `a restricted model doesn't advertise what the bridge won't send`() {
     let limited = ClaudeLanguageModel(
       name: ClaudeModel(
@@ -36,6 +38,7 @@ import DeviceCheck
 
   // Images and a schema are contracts, so every model that may serve the
   // request has to take them. Reasoning is a hint, so it follows the model.
+  @available(iOS 27.0, macOS 27.0, visionOS 27.0, watchOS 27.0, *)
   @Test func `fallbacks narrow the contracts but not the hints`() {
     let plain = ClaudeModel(id: "claude-plain", capabilities: .init())
     let model = ClaudeLanguageModel(name: .opus5, auth: .apiKey("k"), fallbacks: [plain])
@@ -56,6 +59,7 @@ import DeviceCheck
     #expect(serverDefault.executorConfiguration.fallbacks == .serverDefault)
   }
 
+  @available(iOS 27.0, macOS 27.0, visionOS 27.0, watchOS 27.0, *)
   @Test func `a user profile flows into the executor configuration`() {
     let model = ClaudeLanguageModel(name: .opus5, auth: .apiKey("k"), userProfileID: "uprof_1")
     #expect(model.userProfileID == "uprof_1")
@@ -68,6 +72,7 @@ import DeviceCheck
 
   // Each fallback gets the closest effort level it accepts, so the fixed
   // effort is checked against the requested model alone.
+  @available(iOS 27.0, macOS 27.0, visionOS 27.0, watchOS 27.0, *)
   @Test func `a fixed effort is checked against the model, not its fallbacks`() {
     let plain = ClaudeModel(id: "claude-plain", capabilities: .init())
     let model = ClaudeLanguageModel(
@@ -79,10 +84,12 @@ import DeviceCheck
     #expect(model.executorConfiguration.fixedEffort == .xhigh)
   }
 
+  @available(iOS 27.0, macOS 27.0, visionOS 27.0, watchOS 27.0, *)
   @Test func `a fixed effort flows into the executor configuration`() {
     let model = ClaudeLanguageModel(name: .opus4_8, auth: .apiKey("k"), fixedEffort: .max)
     #expect(model.executorConfiguration.fixedEffort == .max)
   }
+  @available(iOS 27.0, macOS 27.0, visionOS 27.0, watchOS 27.0, *)
   @Test func `authenticateIfNeeded is a no-op for api key auth`() async throws {
     let model = ClaudeLanguageModel(name: .sonnet4_6, auth: .apiKey("k"))
     try await model.authenticateIfNeeded()
@@ -91,7 +98,9 @@ import DeviceCheck
   #if canImport(DeviceCheck)
   // Runs only where App Attest is unavailable; on capable hardware this
   // would attempt a live Apple attestation.
+  @available(iOS 27.0, macOS 27.0, visionOS 27.0, watchOS 27.0, *)
   @Test(.enabled(if: !DCAppAttestService.shared.isSupported))
+  @available(iOS 27.0, macOS 27.0, visionOS 27.0, watchOS 27.0, *)
   func `authenticateIfNeeded surfaces attestation failure as a public error`() async {
     let model = ClaudeLanguageModel(
       name: .sonnet4_6,

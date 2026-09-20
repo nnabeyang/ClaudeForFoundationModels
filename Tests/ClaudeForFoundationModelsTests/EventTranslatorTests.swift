@@ -10,6 +10,7 @@ import Testing
 @testable import ClaudeForFoundationModels
 
 @Suite struct EventTranslatorTests {
+  @available(iOS 27.0, macOS 27.0, visionOS 27.0, watchOS 27.0, *)
   @Test func `text deltas stream as multiple cumulative snapshots`() async throws {
     let session = LanguageModelSession(
       model: StubbedClaudeModel(fixture: textTurn(deltas: ["Hello", ", world"]))
@@ -27,6 +28,7 @@ import Testing
     #expect(snapshots.allSatisfy { "Hello, world".hasPrefix($0) })
   }
 
+  @available(iOS 27.0, macOS 27.0, visionOS 27.0, watchOS 27.0, *)
   @Test func `delta token counts are nonzero so partial snapshots deliver`() {
     // The framework paces snapshot delivery by reported token counts, and a
     // zero count defers everything to one final snapshot (issue #2). Per-event
@@ -34,6 +36,7 @@ import Testing
     #expect(EventTranslator.deltaTokenCount > 0)
   }
 
+  @available(iOS 27.0, macOS 27.0, visionOS 27.0, watchOS 27.0, *)
   @Test func `a tool call round-trips through the session`() async throws {
     let tool = WeatherTool()
     let transport = MockTransport(responses: [
@@ -60,6 +63,7 @@ import Testing
     #expect(followup.contains("Sunny"))
   }
 
+  @available(iOS 27.0, macOS 27.0, visionOS 27.0, watchOS 27.0, *)
   @Test func `a tool call with no streamed arguments still invokes the tool`() async throws {
     let tool = PingTool()
     let transport = MockTransport(responses: [
@@ -77,6 +81,7 @@ import Testing
     #expect(response.content == "Done!")
   }
 
+  @available(iOS 27.0, macOS 27.0, visionOS 27.0, watchOS 27.0, *)
   @Test func `structured output decodes from streamed text deltas`() async throws {
     // With output_config.format the response is constrained-decoded JSON
     // streaming as ordinary text deltas — no synthetic tool, no special routing.
@@ -92,6 +97,7 @@ import Testing
     #expect(response.content == StubItinerary(title: "Trip"))
   }
 
+  @available(iOS 27.0, macOS 27.0, visionOS 27.0, watchOS 27.0, *)
   @Test func `usage totals are cumulative and wholesale`() async throws {
     let session = LanguageModelSession(
       model: StubbedClaudeModel(
@@ -115,6 +121,7 @@ import Testing
     #expect(session.usage.output.reasoningTokenCount == 0)
   }
 
+  @available(iOS 27.0, macOS 27.0, visionOS 27.0, watchOS 27.0, *)
   @Test func `an SSE error event surfaces as the mapped typed error`() async throws {
     let session = LanguageModelSession(
       model: StubbedClaudeModel(
@@ -136,6 +143,7 @@ import Testing
     }
   }
 
+  @available(iOS 27.0, macOS 27.0, visionOS 27.0, watchOS 27.0, *)
   @Test func `a server tool turn is recorded in order and surfaced as activity`() async throws {
     let blocks: [TurnBlock] = [
       .text(["Checking."]), .search(id: "srv_1", query: "weather"), .searchResult(id: "srv_1"),
@@ -168,6 +176,7 @@ import Testing
     )
   }
 
+  @available(iOS 27.0, macOS 27.0, visionOS 27.0, watchOS 27.0, *)
   @Test func `each block is recorded on the entry that presents it`() async throws {
     let tool = PingTool()
     let blocks: [TurnBlock] = [
@@ -206,6 +215,7 @@ import Testing
     #expect(try replayedAssistantContent(in: transport) == [blocks.map(\.wire)])
   }
 
+  @available(iOS 27.0, macOS 27.0, visionOS 27.0, watchOS 27.0, *)
   @Test func `a recorded turn goes back to the API exactly as received`() async throws {
     let blocks: [TurnBlock] = [
       .search(id: "srv_1", query: "weather"), .searchResult(id: "srv_1"),
@@ -223,6 +233,7 @@ import Testing
     #expect(try replayedAssistantContent(in: transport) == [blocks.map(\.wire)])
   }
 
+  @available(iOS 27.0, macOS 27.0, visionOS 27.0, watchOS 27.0, *)
   @Test func `a search deferred behind a client tool call is answered in the next response`()
     async throws
   {
@@ -261,6 +272,7 @@ import Testing
     )
   }
 
+  @available(iOS 27.0, macOS 27.0, visionOS 27.0, watchOS 27.0, *)
   @Test func `a response that streams no text still records what it received`() async throws {
     // The deferred result arrives in a response that goes straight on to
     // another tool call: that response entry gets metadata and nothing else,
@@ -308,6 +320,7 @@ import Testing
     )
   }
 
+  @available(iOS 27.0, macOS 27.0, visionOS 27.0, watchOS 27.0, *)
   @Test func `a paused turn is continued from where it stopped`() async throws {
     let paused: [TurnBlock] = [.search(id: "srv_1", query: "q"), .searchResult(id: "srv_1")]
     let transport = MockTransport(responses: [
@@ -328,6 +341,7 @@ import Testing
     #expect(session.usage.output.totalTokenCount == 10)
   }
 
+  @available(iOS 27.0, macOS 27.0, visionOS 27.0, watchOS 27.0, *)
   @Test func `a continuation doesn't end in whitespace even when the paused content did`()
     async throws
   {
@@ -353,6 +367,7 @@ import Testing
     #expect(recordedBlocks(in: session.transcript).prefix(4).elementsEqual(paused.map(\.wire)))
   }
 
+  @available(iOS 27.0, macOS 27.0, visionOS 27.0, watchOS 27.0, *)
   @Test func `a pause that delivered nothing ends the turn`() async throws {
     let transport = MockTransport(responses: [
       (200, turn([.search(id: "srv_1", query: "q")], stopReason: "pause_turn")),
@@ -365,6 +380,7 @@ import Testing
     #expect(transport.requests.count == 2)
   }
 
+  @available(iOS 27.0, macOS 27.0, visionOS 27.0, watchOS 27.0, *)
   @Test func `a turn that ends mid-answer replays with the text that had streamed`() async throws {
     let completed: [TurnBlock] = [.search(id: "srv_1", query: "q"), .searchResult(id: "srv_1")]
     let whole = turn(completed + [.text(["Partial answer, "])])
@@ -394,6 +410,7 @@ import Testing
     )
   }
 
+  @available(iOS 27.0, macOS 27.0, visionOS 27.0, watchOS 27.0, *)
   @Test func `activity is readable from the transcript while the answer is still streaming`()
     async throws
   {
@@ -416,6 +433,7 @@ import Testing
     #expect(activityAtFirstSnapshot?.map(\.id) == ["srv_1"])
   }
 
+  @available(iOS 27.0, macOS 27.0, visionOS 27.0, watchOS 27.0, *)
   @Test func `unknown events and deltas are ignored, not thrown`() async throws {
     let session = LanguageModelSession(
       model: StubbedClaudeModel(
@@ -455,6 +473,7 @@ import Testing
 // MARK: - Fixtures
 
 /// An assistant turn that calls a client tool, streaming its arguments.
+@available(iOS 27.0, macOS 27.0, visionOS 27.0, watchOS 27.0, *)
 private func toolCallTurn(id: String, name: String, argumentDeltas: [String]) -> Data {
   var frames: [[String]] = [
     [
@@ -485,10 +504,12 @@ private func toolCallTurn(id: String, name: String, argumentDeltas: [String]) ->
 }
 
 @Generable
+@available(iOS 27.0, macOS 27.0, visionOS 27.0, watchOS 27.0, *)
 private struct StubItinerary: Equatable {
   let title: String
 }
 
+@available(iOS 27.0, macOS 27.0, visionOS 27.0, watchOS 27.0, *)
 private final class PingTool: Tool {
   let name = "ping"
   let description = "Pings."
@@ -499,12 +520,14 @@ private final class PingTool: Tool {
   private let count = Mutex<Int>(0)
   var callCount: Int { count.withLock { $0 } }
 
+  @available(iOS 27.0, macOS 27.0, visionOS 27.0, watchOS 27.0, *)
   func call(arguments: Arguments) async throws -> String {
     count.withLock { $0 += 1 }
     return "Pong"
   }
 }
 
+@available(iOS 27.0, macOS 27.0, visionOS 27.0, watchOS 27.0, *)
 private final class WeatherTool: Tool {
   let name = "getWeather"
   let description = "Gets the weather for a city."
@@ -517,6 +540,7 @@ private final class WeatherTool: Tool {
   private let cities = Mutex<[String]>([])
   var calledCities: [String] { cities.withLock { $0 } }
 
+  @available(iOS 27.0, macOS 27.0, visionOS 27.0, watchOS 27.0, *)
   func call(arguments: Arguments) async throws -> String {
     cities.withLock { $0.append(arguments.city) }
     return "Sunny"

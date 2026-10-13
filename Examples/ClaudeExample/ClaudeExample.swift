@@ -15,7 +15,18 @@ import FoundationModels
 ///     ANTHROPIC_API_KEY=<key> swift run ClaudeExample --search "Top spaceflight news this week?"
 @main
 struct ClaudeExample {
+  // The entry point itself can't carry an `@available`, so it gates at runtime
+  // and hands off to `run()`. The package deploys to 26 so apps that still
+  // support it can link it, but the provider API this example drives is 27-only.
   static func main() async {
+    guard #available(iOS 27.0, macOS 27.0, visionOS 27.0, watchOS 27.0, *) else {
+      fail("This example needs macOS 27 or newer.")
+    }
+    await run()
+  }
+
+  @available(iOS 27.0, macOS 27.0, visionOS 27.0, watchOS 27.0, *)
+  private static func run() async {
     guard
       let key = ProcessInfo.processInfo.environment["ANTHROPIC_API_KEY"],
       !key.isEmpty

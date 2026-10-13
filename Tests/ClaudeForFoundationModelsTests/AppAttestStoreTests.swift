@@ -31,6 +31,7 @@ struct AppAttestStoreTests {
   )
   private let clientID = "clid_test"
 
+  @available(iOS 27.0, macOS 27.0, visionOS 27.0, watchOS 27.0, *)
   @Test func `key id round-trips and clears`() throws {
     defer { try? store.clear(for: clientID) }
     #expect(try store.keyID(for: clientID) == nil)
@@ -45,6 +46,7 @@ struct AppAttestStoreTests {
     #expect(try store.keyID(for: clientID) == nil)
   }
 
+  @available(iOS 27.0, macOS 27.0, visionOS 27.0, watchOS 27.0, *)
   @Test func `token round-trips and deletes`() throws {
     defer { try? store.clear(for: clientID) }
     #expect(try store.token(for: clientID) == nil)
@@ -58,6 +60,7 @@ struct AppAttestStoreTests {
     try store.deleteToken(for: clientID)  // idempotent
   }
 
+  @available(iOS 27.0, macOS 27.0, visionOS 27.0, watchOS 27.0, *)
   @Test func `client ids are isolated`() throws {
     defer {
       try? store.clear(for: "a")

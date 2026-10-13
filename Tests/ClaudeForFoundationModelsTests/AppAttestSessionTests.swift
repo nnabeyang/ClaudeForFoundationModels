@@ -9,6 +9,7 @@ import Testing
 @testable import ClaudeForFoundationModels
 
 @Suite struct AppAttestSessionTests {
+  @available(iOS 27.0, macOS 27.0, visionOS 27.0, watchOS 27.0, *)
   @Test func `a stored unexpired token is returned without any request`() async throws {
     let store = InMemoryAppAttestStore()
     try store.setToken(.init(value: "tok-1", expiresAt: .distantFuture), for: "clid_test")
@@ -19,6 +20,7 @@ import Testing
     #expect(transport.requests.isEmpty)
   }
 
+  @available(iOS 27.0, macOS 27.0, visionOS 27.0, watchOS 27.0, *)
   @Test func `first run registers the key and returns the registration token`() async throws {
     let store = InMemoryAppAttestStore()
     let attestation = FakeAttestation()
@@ -62,6 +64,7 @@ import Testing
     )
   }
 
+  @available(iOS 27.0, macOS 27.0, visionOS 27.0, watchOS 27.0, *)
   @Test func `steady state mints a token via assertion`() async throws {
     let store = InMemoryAppAttestStore()
     try store.setKeyID(FakeAttestation.keyID, for: "clid_test")
@@ -95,6 +98,7 @@ import Testing
     )
   }
 
+  @available(iOS 27.0, macOS 27.0, visionOS 27.0, watchOS 27.0, *)
   @Test func `a rejected assertion retries with a fresh challenge before re-attesting`()
     async throws
   {
@@ -119,6 +123,7 @@ import Testing
     #expect(try store.keyID(for: "clid_test") == FakeAttestation.keyID)
   }
 
+  @available(iOS 27.0, macOS 27.0, visionOS 27.0, watchOS 27.0, *)
   @Test func `two rejected assertions re-attest once and use the new registration token`()
     async throws
   {
@@ -143,6 +148,7 @@ import Testing
     #expect(transport.requests[5].url?.path() == "/v1/oauth/app-attest/register")
   }
 
+  @available(iOS 27.0, macOS 27.0, visionOS 27.0, watchOS 27.0, *)
   @Test func `a rejected registration does not persist the key`() async throws {
     let store = InMemoryAppAttestStore()
     let transport = MockTransport(responses: [
@@ -159,6 +165,7 @@ import Testing
     #expect(try store.keyID(for: "clid_test") == nil)
   }
 
+  @available(iOS 27.0, macOS 27.0, visionOS 27.0, watchOS 27.0, *)
   @Test func `a second rejected assertion within the cooldown does not discard the key`()
     async throws
   {
@@ -194,6 +201,7 @@ import Testing
     #expect(try store.keyID(for: "clid_test") == FakeAttestation.keyID)
   }
 
+  @available(iOS 27.0, macOS 27.0, visionOS 27.0, watchOS 27.0, *)
   @Test func `a failed registration backs off instead of re-attesting per request`()
     async throws
   {
@@ -220,6 +228,7 @@ import Testing
     #expect(transport.requests.count == 2)
   }
 
+  @available(iOS 27.0, macOS 27.0, visionOS 27.0, watchOS 27.0, *)
   @Test func `invalidation only discards the token the failed request used`() async throws {
     let store = InMemoryAppAttestStore()
     try store.setToken(.init(value: "tok-1", expiresAt: .distantFuture), for: "clid_test")
@@ -233,6 +242,7 @@ import Testing
     #expect(try store.token(for: "clid_test") == nil)
   }
 
+  @available(iOS 27.0, macOS 27.0, visionOS 27.0, watchOS 27.0, *)
   @Test func `an invalidated token is not resurrected by a failed keychain delete`()
     async throws
   {
@@ -252,6 +262,7 @@ import Testing
     #expect(try await session.currentToken() == "tok-2")
   }
 
+  @available(iOS 27.0, macOS 27.0, visionOS 27.0, watchOS 27.0, *)
   @Test func `a key the Secure Enclave no longer holds re-attests via the recovery ladder`()
     async throws
   {
@@ -275,6 +286,7 @@ import Testing
     #expect(transport.requests[3].url?.path() == "/v1/oauth/app-attest/register")
   }
 
+  @available(iOS 27.0, macOS 27.0, visionOS 27.0, watchOS 27.0, *)
   @Test func `a challenge failure during provisioning does not back off`() async throws {
     let attestation = FakeAttestation()
     let transport = MockTransport(responses: [
@@ -295,6 +307,7 @@ import Testing
     #expect(transport.requests.count == 3)
   }
 
+  @available(iOS 27.0, macOS 27.0, visionOS 27.0, watchOS 27.0, *)
   @Test func `a mint rate limit serves the still-unexpired token`() async throws {
     let store = InMemoryAppAttestStore()
     try store.setKeyID(FakeAttestation.keyID, for: "clid_test")
@@ -312,6 +325,7 @@ import Testing
     #expect(try await session.currentToken() == "old-tok")
   }
 
+  @available(iOS 27.0, macOS 27.0, visionOS 27.0, watchOS 27.0, *)
   @Test func `a token response without expires_in is rejected`() async throws {
     let store = InMemoryAppAttestStore()
     try store.setKeyID(FakeAttestation.keyID, for: "clid_test")
@@ -326,6 +340,7 @@ import Testing
     }
   }
 
+  @available(iOS 27.0, macOS 27.0, visionOS 27.0, watchOS 27.0, *)
   @Test func `a mint 429 carries the server's Retry-After`() async throws {
     let store = InMemoryAppAttestStore()
     try store.setKeyID(FakeAttestation.keyID, for: "clid_test")
@@ -342,6 +357,7 @@ import Testing
     }
   }
 
+  @available(iOS 27.0, macOS 27.0, visionOS 27.0, watchOS 27.0, *)
   @Test func `a Retry-After of zero permits an immediate retry`() async throws {
     let store = InMemoryAppAttestStore()
     try store.setKeyID(FakeAttestation.keyID, for: "clid_test")
@@ -362,6 +378,7 @@ import Testing
     #expect(try await session.currentToken() == "tok-2")
   }
 
+  @available(iOS 27.0, macOS 27.0, visionOS 27.0, watchOS 27.0, *)
   @Test func `pathological wire durations are sanitized, not trapped`() async throws {
     let store = InMemoryAppAttestStore()
     try store.setKeyID(FakeAttestation.keyID, for: "clid_test")
@@ -379,6 +396,7 @@ import Testing
     }
   }
 
+  @available(iOS 27.0, macOS 27.0, visionOS 27.0, watchOS 27.0, *)
   @Test func `a pre-issued challenge saves the fetch round trip`() async throws {
     let store = InMemoryAppAttestStore()
     try store.setKeyID(FakeAttestation.keyID, for: "clid_test")
@@ -400,6 +418,7 @@ import Testing
     #expect(transport.requests[2].url?.path() == "/v1/oauth/token")
   }
 
+  @available(iOS 27.0, macOS 27.0, visionOS 27.0, watchOS 27.0, *)
   @Test func `a stale pre-issued challenge falls back to the fetch`() async throws {
     let store = InMemoryAppAttestStore()
     try store.setKeyID(FakeAttestation.keyID, for: "clid_test")
@@ -420,6 +439,7 @@ import Testing
     #expect(transport.requests[2].url?.path() == "/v1/oauth/app-attest/challenge")
   }
 
+  @available(iOS 27.0, macOS 27.0, visionOS 27.0, watchOS 27.0, *)
   @Test func `a mint rate limit backs off without touching the key`() async throws {
     let store = InMemoryAppAttestStore()
     try store.setKeyID(FakeAttestation.keyID, for: "clid_test")
@@ -448,6 +468,7 @@ import Testing
     #expect(try store.keyID(for: "clid_test") == FakeAttestation.keyID)
   }
 
+  @available(iOS 27.0, macOS 27.0, visionOS 27.0, watchOS 27.0, *)
   @Test func `undeployed endpoints surface as notYetAvailable`() async throws {
     let session = makeSession(transport: MockTransport(status: 404, body: Data()))
     await #expect(throws: AppAttestError.notYetAvailable) {
@@ -455,6 +476,7 @@ import Testing
     }
   }
 
+  @available(iOS 27.0, macOS 27.0, visionOS 27.0, watchOS 27.0, *)
   @Test func `invalidateToken drops the cached and stored token`() async throws {
     let store = InMemoryAppAttestStore()
     try store.setToken(.init(value: "tok-1", expiresAt: .distantFuture), for: "clid_test")
@@ -469,6 +491,7 @@ import Testing
     }
   }
 
+  @available(iOS 27.0, macOS 27.0, visionOS 27.0, watchOS 27.0, *)
   @Test func `attestIfNeeded skips when a key id is already stored`() async throws {
     let store = InMemoryAppAttestStore()
     try store.setKeyID("key-1", for: "clid_test")
@@ -480,6 +503,7 @@ import Testing
     #expect(attestation.generateKeyCount == 0)
   }
 
+  @available(iOS 27.0, macOS 27.0, visionOS 27.0, watchOS 27.0, *)
   @Test func `unsupported attestation throws on first use`() async throws {
     let session = makeSession(attestation: FakeAttestation(supported: false))
     await #expect(throws: AppAttestError.unsupported) {
@@ -487,6 +511,7 @@ import Testing
     }
   }
 
+  @available(iOS 27.0, macOS 27.0, visionOS 27.0, watchOS 27.0, *)
   @Test func `concurrent attestIfNeeded calls coalesce onto one key generation`() async throws {
     let attestation = FakeAttestation()
     // The singleflight is the subject; each provision that does run fails at
@@ -504,11 +529,13 @@ import Testing
     #expect(attestation.generateKeyCount == 1)
   }
 
+  @available(iOS 27.0, macOS 27.0, visionOS 27.0, watchOS 27.0, *)
   @Test func `form encoding percent-encodes reserved characters`() {
     let encoded = AppAttestSession.formEncode(["assertion": "a+b/c=", "grant_type": "x:y"])
     #expect(encoded == "assertion=a%2Bb%2Fc%3D&grant_type=x%3Ay")
   }
 
+  @available(iOS 27.0, macOS 27.0, visionOS 27.0, watchOS 27.0, *)
   @Test func `loose base64 decoding accepts every alphabet and padding`() {
     let bytes = Data([0xFB, 0xEF, 0xFF])
     #expect(AppAttestSession.decodeBase64Loose(bytes.base64EncodedString()) == bytes)
@@ -522,6 +549,7 @@ import Testing
 
   // MARK: - Fixtures
 
+  @available(iOS 27.0, macOS 27.0, visionOS 27.0, watchOS 27.0, *)
   private func makeSession(
     store: any AppAttestStore = InMemoryAppAttestStore(),
     attestation: any AttestationService = FakeAttestation(),
@@ -538,6 +566,7 @@ import Testing
 
 }
 
+@available(iOS 27.0, macOS 27.0, visionOS 27.0, watchOS 27.0, *)
 extension Data {
   /// Builds data from a hex string; test-support only.
   init(hexString: String) {
@@ -555,20 +584,27 @@ extension Data {
 // MARK: - Test doubles
 
 /// Ignores `deleteToken` so a seeded token survives invalidation attempts.
+@available(iOS 27.0, macOS 27.0, visionOS 27.0, watchOS 27.0, *)
 final class UndeletableTokenStore: AppAttestStore {
   private let inner = InMemoryAppAttestStore()
 
+  @available(iOS 27.0, macOS 27.0, visionOS 27.0, watchOS 27.0, *)
   func keyID(for clientID: String) throws -> String? { try inner.keyID(for: clientID) }
+  @available(iOS 27.0, macOS 27.0, visionOS 27.0, watchOS 27.0, *)
   func setKeyID(_ keyID: String, for clientID: String) throws {
     try inner.setKeyID(keyID, for: clientID)
   }
+  @available(iOS 27.0, macOS 27.0, visionOS 27.0, watchOS 27.0, *)
   func token(for clientID: String) throws -> StoredToken? { try inner.token(for: clientID) }
+  @available(iOS 27.0, macOS 27.0, visionOS 27.0, watchOS 27.0, *)
   func setToken(_ token: StoredToken, for clientID: String) throws {
     try inner.setToken(token, for: clientID)
   }
+  @available(iOS 27.0, macOS 27.0, visionOS 27.0, watchOS 27.0, *)
   func deleteToken(for clientID: String) throws {}
 }
 
+@available(iOS 27.0, macOS 27.0, visionOS 27.0, watchOS 27.0, *)
 final class InMemoryAppAttestStore: AppAttestStore {
   private struct Entry {
     var keyID: String?
@@ -576,23 +612,29 @@ final class InMemoryAppAttestStore: AppAttestStore {
   }
   private let entries = Mutex<[String: Entry]>([:])
 
+  @available(iOS 27.0, macOS 27.0, visionOS 27.0, watchOS 27.0, *)
   func keyID(for clientID: String) throws -> String? {
     entries.withLock { $0[clientID]?.keyID }
   }
+  @available(iOS 27.0, macOS 27.0, visionOS 27.0, watchOS 27.0, *)
   func setKeyID(_ keyID: String, for clientID: String) throws {
     entries.withLock { $0[clientID, default: .init()].keyID = keyID }
   }
+  @available(iOS 27.0, macOS 27.0, visionOS 27.0, watchOS 27.0, *)
   func token(for clientID: String) throws -> StoredToken? {
     entries.withLock { $0[clientID]?.token }
   }
+  @available(iOS 27.0, macOS 27.0, visionOS 27.0, watchOS 27.0, *)
   func setToken(_ token: StoredToken, for clientID: String) throws {
     entries.withLock { $0[clientID, default: .init()].token = token }
   }
+  @available(iOS 27.0, macOS 27.0, visionOS 27.0, watchOS 27.0, *)
   func deleteToken(for clientID: String) throws {
     entries.withLock { $0[clientID]?.token = nil }
   }
 }
 
+@available(iOS 27.0, macOS 27.0, visionOS 27.0, watchOS 27.0, *)
 final class FakeAttestation: AttestationService {
   /// Standard base64 of 32 bytes of 0x07, decodable like a real key ID.
   static let keyID = Data(repeating: 0x07, count: 32).base64EncodedString()
@@ -614,16 +656,19 @@ final class FakeAttestation: AttestationService {
   var attestHashes: [Data] { state.withLock { $0.attest } }
   var assertionHashes: [Data] { state.withLock { $0.assertions } }
 
+  @available(iOS 27.0, macOS 27.0, visionOS 27.0, watchOS 27.0, *)
   func generateKey() async throws -> String {
     state.withLock { $0.keys += 1 }
     // Suspends before returning, like the real seconds-long call.
     try? await Task.sleep(for: .milliseconds(50))
     return Self.keyID
   }
+  @available(iOS 27.0, macOS 27.0, visionOS 27.0, watchOS 27.0, *)
   func attestKey(_ keyID: String, clientDataHash: Data) async throws -> Data {
     state.withLock { $0.attest.append(clientDataHash) }
     return Self.attestationObject
   }
+  @available(iOS 27.0, macOS 27.0, visionOS 27.0, watchOS 27.0, *)
   func generateAssertion(_ keyID: String, clientDataHash: Data) async throws -> Data {
     state.withLock { $0.assertions.append(clientDataHash) }
     if let assertionError { throw assertionError }

@@ -11,6 +11,7 @@ import Testing
 @Suite struct ClaudeModelHandoverTests {
   // A model can decline partway through its answer. The stream then carries a
   // `fallback` block, and the fallback model continues from the text so far.
+  @available(iOS 27.0, macOS 27.0, visionOS 27.0, watchOS 27.0, *)
   @Test func `a handover holds its place and names the model that finished`() async throws {
     let session = LanguageModelSession(
       model: StubbedClaudeModel(
@@ -41,6 +42,7 @@ import Testing
     #expect(response.claudeModelID == "claude-opus-4-8")
   }
 
+  @available(iOS 27.0, macOS 27.0, visionOS 27.0, watchOS 27.0, *)
   @Test func `without a handover the model the stream started on served the response`()
     async throws
   {
@@ -62,7 +64,9 @@ import Testing
     #expect(routedResponse.claudeModelID == "claude-opus-4-8")
   }
 
+  @available(iOS 27.0, macOS 27.0, visionOS 27.0, watchOS 27.0, *)
   @Test func `a handover's reason reads what the API sent`() throws {
+    @available(iOS 27.0, macOS 27.0, visionOS 27.0, watchOS 27.0, *)
     func handover(trigger: JSONValue?) throws -> ClaudeModelHandover {
       var fields: [String: JSONValue] = [
         "type": "fallback", "from": ["model": "claude-a"], "to": ["model": "claude-b"],
@@ -86,6 +90,7 @@ import Testing
     #expect(ClaudeModelHandover(TurnRecord.Kind(["type": "fallback"])) == nil)
   }
 
+  @available(iOS 27.0, macOS 27.0, visionOS 27.0, watchOS 27.0, *)
   @Test func `a handover goes back on the next turn, with the fallbacks opt-in`() async throws {
     let transport = MockTransport(responses: [
       (

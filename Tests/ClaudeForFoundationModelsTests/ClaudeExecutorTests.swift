@@ -9,6 +9,7 @@ import Testing
 @testable import ClaudeForFoundationModels
 
 @Suite struct ClaudeExecutorTests {
+  @available(iOS 27.0, macOS 27.0, visionOS 27.0, watchOS 27.0, *)
   @Test func `api key auth sends x-api-key`() async throws {
     let transport = MockTransport(body: okStream)
     let session = LanguageModelSession(
@@ -21,6 +22,7 @@ import Testing
     #expect(request.value(forHTTPHeaderField: "x-api-key") == "sk-test")
   }
 
+  @available(iOS 27.0, macOS 27.0, visionOS 27.0, watchOS 27.0, *)
   @Test func `proxied auth sends the proxy headers and no api key`() async throws {
     let transport = MockTransport(body: okStream)
     let session = LanguageModelSession(
@@ -37,6 +39,7 @@ import Testing
     #expect(request.value(forHTTPHeaderField: "x-api-key") == nil)
   }
 
+  @available(iOS 27.0, macOS 27.0, visionOS 27.0, watchOS 27.0, *)
   @Test func `fallbacks reach the wire with the opt-in, after a proxy's own betas`() async throws {
     let transport = MockTransport(body: okStream)
     let session = LanguageModelSession(
@@ -67,6 +70,7 @@ import Testing
   // The profile's beta goes after the proxy's and the fallbacks' betas. The
   // configured profile replaces a proxy header of the same name, however it's
   // spelled, so the request carries one profile.
+  @available(iOS 27.0, macOS 27.0, visionOS 27.0, watchOS 27.0, *)
   @Test func `a user profile reaches the wire, after the other betas`() async throws {
     let transport = MockTransport(body: okStream)
     let session = LanguageModelSession(
@@ -96,6 +100,7 @@ import Testing
     #expect(names?.count == 1)
   }
 
+  @available(iOS 27.0, macOS 27.0, visionOS 27.0, watchOS 27.0, *)
   @Test func `setting a header replaces it, however its name is spelled`() {
     #expect(
       ClaudeExecutor.headers(
@@ -110,6 +115,7 @@ import Testing
     )
   }
 
+  @available(iOS 27.0, macOS 27.0, visionOS 27.0, watchOS 27.0, *)
   @Test func `a beta joins anthropic-beta once, however the header is spelled`() {
     #expect(
       ClaudeExecutor.headers(["X-App-Token": "abc"], addingBetas: []) == ["X-App-Token": "abc"]
@@ -124,6 +130,7 @@ import Testing
     )
   }
 
+  @available(iOS 27.0, macOS 27.0, visionOS 27.0, watchOS 27.0, *)
   @Test func `an empty api key fails before any request is sent`() async throws {
     let transport = MockTransport(body: okStream)
     let session = LanguageModelSession(
@@ -140,6 +147,7 @@ import Testing
     #expect(transport.lastRequest == nil)  // auth is checked before the transport runs
   }
 
+  @available(iOS 27.0, macOS 27.0, visionOS 27.0, watchOS 27.0, *)
   @Test func `a streamed response reaches the session`() async throws {
     let session = LanguageModelSession(model: StubbedClaudeModel(fixture: okStream))
 
@@ -148,6 +156,7 @@ import Testing
     #expect(response.content == "Hi")
   }
 
+  @available(iOS 27.0, macOS 27.0, visionOS 27.0, watchOS 27.0, *)
   @Test func `an API error status is mapped to a typed LanguageModelError`() async throws {
     let transport = MockTransport(
       status: 429,
@@ -166,6 +175,7 @@ import Testing
 
   // MARK: - App Attest
 
+  @available(iOS 27.0, macOS 27.0, visionOS 27.0, watchOS 27.0, *)
   @Test func `appAttest sends a bearer token from the store`() async throws {
     let store = InMemoryAppAttestStore()
     try store.setToken(.init(value: "tok-1", expiresAt: .distantFuture), for: "clid_test")
@@ -185,6 +195,7 @@ import Testing
     #expect(request.value(forHTTPHeaderField: "x-api-key") == nil)
   }
 
+  @available(iOS 27.0, macOS 27.0, visionOS 27.0, watchOS 27.0, *)
   @Test func `appAttest without a credential fails with attestationFailed`() async throws {
     let transport = MockTransport(body: okStream)
     let session = LanguageModelSession(
@@ -205,6 +216,7 @@ import Testing
     #expect(transport.lastRequest == nil)
   }
 
+  @available(iOS 27.0, macOS 27.0, visionOS 27.0, watchOS 27.0, *)
   @Test func `a pre-stream 401 mints a fresh token and retries exactly once`() async throws {
     let store = InMemoryAppAttestStore()
     try store.setKeyID(FakeAttestation.keyID, for: "clid_test")
@@ -232,6 +244,7 @@ import Testing
     #expect(transport.requests[3].value(forHTTPHeaderField: "Authorization") == "Bearer tok-2")
   }
 
+  @available(iOS 27.0, macOS 27.0, visionOS 27.0, watchOS 27.0, *)
   @Test func `an auth error before any channel write is retried`() async throws {
     let store = InMemoryAppAttestStore()
     try store.setKeyID(FakeAttestation.keyID, for: "clid_test")
@@ -262,6 +275,7 @@ import Testing
     #expect(session.usage.input.totalTokenCount == 10)
   }
 
+  @available(iOS 27.0, macOS 27.0, visionOS 27.0, watchOS 27.0, *)
   @Test func `an authentication error after stream content is not retried`() async throws {
     let store = InMemoryAppAttestStore()
     try store.setToken(.init(value: "tok-1", expiresAt: .distantFuture), for: "clid_test")
@@ -286,6 +300,7 @@ import Testing
     #expect(try store.token(for: "clid_test") == nil)
   }
 
+  @available(iOS 27.0, macOS 27.0, visionOS 27.0, watchOS 27.0, *)
   @Test func `a continuation rejected for auth is retried with a fresh token`() async throws {
     let store = InMemoryAppAttestStore()
     try store.setKeyID(FakeAttestation.keyID, for: "clid_test")
@@ -315,9 +330,11 @@ import Testing
     #expect(try replayedAssistantContent(in: transport).count == 1)
   }
 
+  @available(iOS 27.0, macOS 27.0, visionOS 27.0, watchOS 27.0, *)
   @Test func `one attest session is shared per client id`() throws {
     let clientID = "clid_\(UUID().uuidString)"
     var made = 0
+    @available(iOS 27.0, macOS 27.0, visionOS 27.0, watchOS 27.0, *)
     func makeSession() -> AppAttestSession {
       made += 1
       return AppAttestSession(
@@ -353,6 +370,7 @@ import Testing
 
   /// The default transport answers 404 so no auth wire flow leaves the
   /// process; pass a transport to script the OAuth exchange.
+  @available(iOS 27.0, macOS 27.0, visionOS 27.0, watchOS 27.0, *)
   private func attestSession(
     store: any AppAttestStore,
     transport: MockTransport = MockTransport(status: 404, body: Data())

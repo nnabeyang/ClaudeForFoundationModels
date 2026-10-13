@@ -9,6 +9,7 @@ import Testing
 @testable import ClaudeForFoundationModels
 
 @Suite struct TurnRecordTests {
+  @available(iOS 27.0, macOS 27.0, visionOS 27.0, watchOS 27.0, *)
   @Test func `blocks are read by the fields the bridge acts on`() {
     #expect(TurnRecord.Kind(["type": "text", "text": "Hi", "citations": []]) == .text("Hi"))
     #expect(
@@ -37,6 +38,7 @@ import Testing
     #expect(TurnRecord.Kind(["type": "tool_use", "name": "ping"]) == .other)
   }
 
+  @available(iOS 27.0, macOS 27.0, visionOS 27.0, watchOS 27.0, *)
   @Test func `every JSON shape comes back out of entry metadata as it went in`() {
     let blocks: [JSONValue] = [
       [
@@ -58,6 +60,7 @@ import Testing
     #expect(restored.turn == "turn-1")
   }
 
+  @available(iOS 27.0, macOS 27.0, visionOS 27.0, watchOS 27.0, *)
   @Test func `records survive persisting the transcript`() throws {
     let thinking: JSONValue = ["type": "redacted_thinking", "data": "3q2+7w=="]
     let call: JSONValue = ["type": "tool_use", "id": "toolu_1", "name": "ping", "input": ["n": 1]]
@@ -82,6 +85,7 @@ import Testing
     #expect(recordedBlocks(in: restored) == [thinking] + blocks + [call])
   }
 
+  @available(iOS 27.0, macOS 27.0, visionOS 27.0, watchOS 27.0, *)
   @Test func `the stored form is stable text`() {
     // Equal records must store equal text, so a transcript's metadata (and
     // its persisted form) is the same however the blocks' fields were ordered.
@@ -93,6 +97,7 @@ import Testing
     #expect(a[TurnRecord.metadataKey] is String)
   }
 
+  @available(iOS 27.0, macOS 27.0, visionOS 27.0, watchOS 27.0, *)
   @Test func `entries without a usable record read as empty`() {
     #expect(TurnRecord(metadata: Transcript.Response(segments: []).metadata).isEmpty)
     let foreign = Transcript.Response(metadata: [TurnRecord.metadataKey: 42], segments: [])

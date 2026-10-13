@@ -15,6 +15,7 @@ import Testing
 
 @Suite struct WireLevelSessionTests {
 
+  @available(iOS 27.0, macOS 27.0, visionOS 27.0, watchOS 27.0, *)
   @Test func `sonnet5 session requests summarized thinking and surfaces reasoning text`()
     async throws
   {
@@ -54,6 +55,7 @@ import Testing
 /// and records the first non-empty request body. Connections that close
 /// without delivering a body (probes, retries) are ignored rather than
 /// allowed to poison the capture.
+@available(iOS 27.0, macOS 27.0, visionOS 27.0, watchOS 27.0, *)
 private final class SSEStubServer: Sendable {
   private final class State: Sendable {
     let captured = Mutex<Data?>(nil)
@@ -143,6 +145,7 @@ private final class SSEStubServer: Sendable {
   /// Reads until the full request (headers + Content-Length body) arrives.
   /// Completes with empty data for connections that close early or carry no
   /// parseable body.
+  @available(iOS 27.0, macOS 27.0, visionOS 27.0, watchOS 27.0, *)
   private static func drainRequest(
     _ connection: NWConnection,
     accumulated: Data,
@@ -185,6 +188,7 @@ private final class SSEStubServer: Sendable {
     }
   }
 
+  @available(iOS 27.0, macOS 27.0, visionOS 27.0, watchOS 27.0, *)
   func stop() {
     listener.cancel()
     state.connections.withLock { open in

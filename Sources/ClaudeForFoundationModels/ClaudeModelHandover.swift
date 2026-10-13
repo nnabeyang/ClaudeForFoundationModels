@@ -64,6 +64,7 @@ public struct ClaudeModelHandover: Sendable, Equatable {
   }
 }
 
+@available(iOS 27.0, macOS 27.0, visionOS 27.0, watchOS 27.0, *)
 extension Transcript.Response {
   /// The handover that `segment` holds the place of, or `nil` for an ordinary
   /// segment.

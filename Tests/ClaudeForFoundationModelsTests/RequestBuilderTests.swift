@@ -9,6 +9,7 @@ import Testing
 @testable import ClaudeForFoundationModels
 
 @Suite struct RequestBuilderTests {
+  @available(iOS 27.0, macOS 27.0, visionOS 27.0, watchOS 27.0, *)
   @Test func `instructions become the system prompt`() throws {
     let transcript = Transcript(entries: [
       .instructions(.init(segments: [.text(.init(content: "Be concise."))], toolDefinitions: [])),
@@ -24,6 +25,7 @@ import Testing
     #expect(built.request.messages[0].content == [.text("Hello")])
   }
 
+  @available(iOS 27.0, macOS 27.0, visionOS 27.0, watchOS 27.0, *)
   @Test func `multi-turn entries map to alternating messages`() throws {
     let transcript = Transcript(entries: [
       .prompt(.init(segments: [.text(.init(content: "Hi"))])),
@@ -34,6 +36,7 @@ import Testing
     #expect(built.request.messages.map(\.role) == [.user, .assistant, .user])
   }
 
+  @available(iOS 27.0, macOS 27.0, visionOS 27.0, watchOS 27.0, *)
   @Test func `tool calls and outputs round-trip`() throws {
     let transcript = Transcript(entries: [
       .prompt(.init(segments: [.text(.init(content: "Weather in SF?"))])),
@@ -76,6 +79,7 @@ import Testing
     #expect(result == [.text("72F sunny")])
   }
 
+  @available(iOS 27.0, macOS 27.0, visionOS 27.0, watchOS 27.0, *)
   @Test func `tool call arguments replay with every JSON shape intact`() throws {
     let arguments = try GeneratedContent(
       json: #"{"n":1.5,"i":2,"b":true,"s":"x","a":[1,"y",null],"o":{"k":{}}}"#
@@ -97,6 +101,7 @@ import Testing
     )
   }
 
+  @available(iOS 27.0, macOS 27.0, visionOS 27.0, watchOS 27.0, *)
   @Test func `enabled tools become tool definitions with full schema`() throws {
     let request = LanguageModelExecutorGenerationRequest.make(
       transcript: Transcript(entries: [.prompt(.init(segments: [.text(.init(content: "Hi"))]))]),
@@ -123,6 +128,7 @@ import Testing
     #expect(schema["required"] == .array([.string("city")]))
   }
 
+  @available(iOS 27.0, macOS 27.0, visionOS 27.0, watchOS 27.0, *)
   @Test func `schema becomes output_config.format with strict json schema`() throws {
     let request = LanguageModelExecutorGenerationRequest.make(
       transcript: Transcript(entries: [
@@ -152,6 +158,7 @@ import Testing
     #expect(schema["additionalProperties"] == .bool(false))
   }
 
+  @available(iOS 27.0, macOS 27.0, visionOS 27.0, watchOS 27.0, *)
   @Test func `nested schemas are sanitized recursively`() throws {
     // NestedArgs has a nested @Generable, which encodes nested x-order keys.
     let request = LanguageModelExecutorGenerationRequest.make(
@@ -171,6 +178,7 @@ import Testing
     #expect(json.contains(#""value":"#))
   }
 
+  @available(iOS 27.0, macOS 27.0, visionOS 27.0, watchOS 27.0, *)
   @Test func `reasoningLevel maps to effort`() throws {
     var contextOptions = ContextOptions()
     contextOptions.reasoningLevel = .deep
@@ -184,6 +192,7 @@ import Testing
     #expect(built.request.outputConfig?.effort == .high)
   }
 
+  @available(iOS 27.0, macOS 27.0, visionOS 27.0, watchOS 27.0, *)
   @Test func `effort is dropped on models that reject it`() throws {
     var contextOptions = ContextOptions()
     contextOptions.reasoningLevel = .deep
@@ -198,6 +207,7 @@ import Testing
     #expect(built.request.outputConfig == nil)
   }
 
+  @available(iOS 27.0, macOS 27.0, visionOS 27.0, watchOS 27.0, *)
   @Test func `bare default capabilities send only the core request`() throws {
     // Defaults opt into nothing — a custom model with `.init()` must produce
     // a request every Claude model accepts.
@@ -219,6 +229,7 @@ import Testing
     #expect(built.request.temperature == nil)
   }
 
+  @available(iOS 27.0, macOS 27.0, visionOS 27.0, watchOS 27.0, *)
   @Test func `thinking is omitted on models that reject adaptive thinking`() throws {
     let request = LanguageModelExecutorGenerationRequest.make(
       transcript: Transcript(entries: [
@@ -234,6 +245,7 @@ import Testing
   // omitted — thinking blocks stream with empty text and reasoning entries
   // end up with no segments. Every adaptive-thinking model accepts the field,
   // so summarized display is requested unconditionally.
+  @available(iOS 27.0, macOS 27.0, visionOS 27.0, watchOS 27.0, *)
   @Test func `adaptive thinking always requests summarized display`() throws {
     let request = LanguageModelExecutorGenerationRequest.make(
       transcript: Transcript(entries: [
@@ -253,6 +265,7 @@ import Testing
   // session replays earlier turns' thinking on every request, so a guided turn
   // must not send a different `system` than the plain turns around it. The API
   // shows the model the schema on its own.
+  @available(iOS 27.0, macOS 27.0, visionOS 27.0, watchOS 27.0, *)
   @Test func `a schema leaves system, tools and messages as a plain turn sends them`() throws {
     let transcript = Transcript(entries: [
       .instructions(.init(segments: [.text(.init(content: "Be concise."))], toolDefinitions: [])),
@@ -276,16 +289,19 @@ import Testing
     #expect(guided.request.messages == plain.request.messages)
   }
 
+  @available(iOS 27.0, macOS 27.0, visionOS 27.0, watchOS 27.0, *)
   @Test func `sonnet 5.5 carries its API ID and the Sonnet 5 request surface`() {
     #expect(ClaudeModel.sonnet5_5.id == "claude-sonnet-5-5")
     #expect(ClaudeModel.sonnet5_5.capabilities == ClaudeModel.sonnet5.capabilities)
   }
 
+  @available(iOS 27.0, macOS 27.0, visionOS 27.0, watchOS 27.0, *)
   @Test func `haiku 5.5 carries its API ID and the Sonnet 5 request surface`() {
     #expect(ClaudeModel.haiku5_5.id == "claude-haiku-5-5")
     #expect(ClaudeModel.haiku5_5.capabilities == ClaudeModel.sonnet5.capabilities)
   }
 
+  @available(iOS 27.0, macOS 27.0, visionOS 27.0, watchOS 27.0, *)
   @Test func `a schema on a model without structured output fails loudly`() throws {
     // A schema is a contract, not a hint — dropping it silently would surface
     // later as a decode failure.
@@ -301,6 +317,7 @@ import Testing
     }
   }
 
+  @available(iOS 27.0, macOS 27.0, visionOS 27.0, watchOS 27.0, *)
   @Test func `a custom model's declared capabilities drive the request`() throws {
     var contextOptions = ContextOptions()
     contextOptions.reasoningLevel = .deep
@@ -318,6 +335,7 @@ import Testing
     #expect(built.request.outputConfig?.effort == .high)
   }
 
+  @available(iOS 27.0, macOS 27.0, visionOS 27.0, watchOS 27.0, *)
   @Test func `a fixed effort overrides reasoningLevel and reaches the wire`() throws {
     var contextOptions = ContextOptions()
     contextOptions.reasoningLevel = .light
@@ -331,6 +349,7 @@ import Testing
     #expect(built.request.outputConfig?.effort == .xhigh)
   }
 
+  @available(iOS 27.0, macOS 27.0, visionOS 27.0, watchOS 27.0, *)
   @Test func `a custom reasoning level naming a Claude effort maps directly`() throws {
     var contextOptions = ContextOptions()
     contextOptions.reasoningLevel = .custom("xhigh")
@@ -344,6 +363,7 @@ import Testing
     #expect(built.request.outputConfig?.effort == .xhigh)
   }
 
+  @available(iOS 27.0, macOS 27.0, visionOS 27.0, watchOS 27.0, *)
   @Test func `reasoning replays as a thinking block in the same assistant turn`() throws {
     let signature = Data([0xAA, 0xBB])
     let transcript = Transcript(entries: [
@@ -382,6 +402,7 @@ import Testing
     #expect(id == "call_1")
   }
 
+  @available(iOS 27.0, macOS 27.0, visionOS 27.0, watchOS 27.0, *)
   @Test func `required tool calling maps to tool_choice any and drops thinking`() throws {
     // The API rejects thinking alongside forced tool use; the forced call is
     // the contract, so thinking yields.
@@ -399,6 +420,7 @@ import Testing
     #expect(built.request.thinking == nil)
   }
 
+  @available(iOS 27.0, macOS 27.0, visionOS 27.0, watchOS 27.0, *)
   @Test func `disallowed tool calling maps to tool_choice none and keeps thinking`() throws {
     var options = GenerationOptions()
     options.toolCallingMode = .disallowed
@@ -414,6 +436,7 @@ import Testing
     #expect(built.request.thinking == .adaptive(display: .summarized))
   }
 
+  @available(iOS 27.0, macOS 27.0, visionOS 27.0, watchOS 27.0, *)
   @Test func `sampling flows on models without thinking`() throws {
     var options = GenerationOptions()
     options.temperature = 0.5
@@ -426,7 +449,9 @@ import Testing
     #expect(built.request.temperature == 0.5)
   }
 
+  @available(iOS 27.0, macOS 27.0, visionOS 27.0, watchOS 27.0, *)
   @Test func `sampling modes map to their wire parameters`() throws {
+    @available(iOS 27.0, macOS 27.0, visionOS 27.0, watchOS 27.0, *)
     func built(_ mode: GenerationOptions.SamplingMode) throws -> MessagesRequest {
       var options = GenerationOptions()
       options.samplingMode = mode
@@ -441,6 +466,7 @@ import Testing
     #expect(try built(.random(probabilityThreshold: 0.9)).topP == 0.9)
   }
 
+  @available(iOS 27.0, macOS 27.0, visionOS 27.0, watchOS 27.0, *)
   @Test func `sampling is dropped when thinking is on`() throws {
     // Sampling is withheld on thinking requests — the docs don't promise
     // the 4.6 generation accepts it alongside thinking — sampling
@@ -460,6 +486,7 @@ import Testing
 
   // A signature-only entry is a thinking block whose display was omitted;
   // the API wants it echoed as received.
+  @available(iOS 27.0, macOS 27.0, visionOS 27.0, watchOS 27.0, *)
   @Test func `signature-only reasoning replays as an empty thinking block`() throws {
     let signature = Data([0x01, 0x02, 0x03])
     let transcript = Transcript(entries: [
@@ -473,6 +500,7 @@ import Testing
     #expect(assistant.content[1] == .text("Done."))
   }
 
+  @available(iOS 27.0, macOS 27.0, visionOS 27.0, watchOS 27.0, *)
   @Test func `multi-segment reasoning replays without injected separators`() throws {
     let transcript = Transcript(entries: [
       .prompt(.init(segments: [.text(.init(content: "Hi"))])),
@@ -491,6 +519,7 @@ import Testing
     )
   }
 
+  @available(iOS 27.0, macOS 27.0, visionOS 27.0, watchOS 27.0, *)
   @Test func `a recorded turn replays as its blocks in the order they were received`() throws {
     let blocks: [JSONValue] = [
       ["type": "text", "text": "Let me check."],
@@ -514,6 +543,7 @@ import Testing
     #expect(built.request.messages[1].content == blocks.map(ContentBlock.raw))
   }
 
+  @available(iOS 27.0, macOS 27.0, visionOS 27.0, watchOS 27.0, *)
   @Test func `blocks recorded across the turn's entries replay in the order they were sent`()
     throws
   {
@@ -546,6 +576,7 @@ import Testing
     )
   }
 
+  @available(iOS 27.0, macOS 27.0, visionOS 27.0, watchOS 27.0, *)
   @Test func `entries with no record are rebuilt from what the framework holds`() throws {
     // History the app assembled around one recorded response: nothing may
     // vanish, and the rebuilt entries keep their place relative to it.
@@ -576,6 +607,7 @@ import Testing
     )
   }
 
+  @available(iOS 27.0, macOS 27.0, visionOS 27.0, watchOS 27.0, *)
   @Test func `recorded thinking is withheld when the request doesn't enable thinking`() throws {
     var options = GenerationOptions()
     options.toolCallingMode = .required
@@ -602,6 +634,7 @@ import Testing
     #expect(built.request.messages[1].content == [.raw(search), .raw(result)])
   }
 
+  @available(iOS 27.0, macOS 27.0, visionOS 27.0, watchOS 27.0, *)
   @Test func `a call whose result never arrived replays as nothing`() throws {
     // The API rejects an unanswered server_tool_use once the turn is over; a
     // turn cut off mid-search must not wedge every later request.
@@ -619,6 +652,7 @@ import Testing
     )
   }
 
+  @available(iOS 27.0, macOS 27.0, visionOS 27.0, watchOS 27.0, *)
   @Test func `a client tool call that never got its output replays as nothing`() throws {
     // Stopped while the tool was running: the call is on the transcript, its
     // output never will be, and the API rejects a tool_use with no result.
@@ -636,6 +670,7 @@ import Testing
     #expect(built.request.messages[1].content == [.raw(["type": "text", "text": "On it."])])
   }
 
+  @available(iOS 27.0, macOS 27.0, visionOS 27.0, watchOS 27.0, *)
   @Test func `a call answered in a later turn replays in both turns`() throws {
     // Server and client tools called together: the result comes back in the
     // response that follows the client tool's output.
@@ -661,6 +696,7 @@ import Testing
     #expect(built.request.messages[3].content == [.raw(result), .raw(answer)])
   }
 
+  @available(iOS 27.0, macOS 27.0, visionOS 27.0, watchOS 27.0, *)
   @Test func `text that streamed past the last recorded block replays as a trailing text block`()
     throws
   {
@@ -669,6 +705,7 @@ import Testing
     let result: JSONValue = [
       "type": "web_search_tool_result", "tool_use_id": "srv_1", "content": [],
     ]
+    @available(iOS 27.0, macOS 27.0, visionOS 27.0, watchOS 27.0, *)
     func build(segments: [String]) throws -> [ContentBlock] {
       let transcript = Transcript(entries: [
         .prompt(.init(segments: [.text(.init(content: "go"))])),
@@ -695,6 +732,7 @@ import Testing
     #expect(try build(segments: ["Checking. ", "\n\n"]) == [.raw(lead), .raw(call), .raw(result)])
   }
 
+  @available(iOS 27.0, macOS 27.0, visionOS 27.0, watchOS 27.0, *)
   @Test func `an unsigned thought is not replayed`() throws {
     // Generation stopped during the thinking that followed a search: the
     // reasoning entry exists but its block never completed.
@@ -712,6 +750,7 @@ import Testing
     #expect(built.request.messages[1].content == recorded.map(ContentBlock.raw))
   }
 
+  @available(iOS 27.0, macOS 27.0, visionOS 27.0, watchOS 27.0, *)
   @Test func `a recorded thought replays verbatim, redacted or not`() throws {
     let redacted: JSONValue = ["type": "redacted_thinking", "data": "3q2+7w=="]
     let omitted: JSONValue = ["type": "thinking", "thinking": "", "signature": "c2ln"]
@@ -728,6 +767,7 @@ import Testing
     )
   }
 
+  @available(iOS 27.0, macOS 27.0, visionOS 27.0, watchOS 27.0, *)
   @Test func `a turn pruned down to its thoughts replays as nothing`() throws {
     // The tool never returned (stopped while it ran): the call goes, and a
     // message of thinking alone isn't worth sending.
@@ -744,6 +784,7 @@ import Testing
     #expect(built.request.messages.map(\.role) == [.user])
   }
 
+  @available(iOS 27.0, macOS 27.0, visionOS 27.0, watchOS 27.0, *)
   @Test func `a tool output whose call is gone from history replays as nothing`() throws {
     let transcript = Transcript(entries: [
       .prompt(.init(segments: [.text(.init(content: "go"))])),
@@ -758,6 +799,7 @@ import Testing
     #expect(built.request.messages[1].content == [.text("Done.")])
   }
 
+  @available(iOS 27.0, macOS 27.0, visionOS 27.0, watchOS 27.0, *)
   @Test func `recorded responses from separate turns left adjacent replay one after the other`()
     throws
   {
@@ -781,6 +823,7 @@ import Testing
     )
   }
 
+  @available(iOS 27.0, macOS 27.0, visionOS 27.0, watchOS 27.0, *)
   @Test func `any tool_use and tool_result block family pairs up by id`() throws {
     // Pairing follows the API's block naming, so tools this package doesn't
     // know about (say, ones a proxy backend adds) get the same protection.
@@ -801,6 +844,7 @@ import Testing
     #expect(built.request.messages[1].content == [.raw(call), .raw(result)])
   }
 
+  @available(iOS 27.0, macOS 27.0, visionOS 27.0, watchOS 27.0, *)
   @Test func `returning a client tool's output keeps the turn's unanswered call`() throws {
     // The API runs the deferred server tool when it receives this request,
     // so the call has to be there even though nothing answers it yet.
@@ -818,6 +862,7 @@ import Testing
     #expect(built.request.messages[1].content == [.raw(call), .raw(toolUse)])
   }
 
+  @available(iOS 27.0, macOS 27.0, visionOS 27.0, watchOS 27.0, *)
   @Test func `an unanswered call is dropped once the conversation has moved on`() throws {
     // The continuation never happened (say, cancelled while the client tool
     // ran); a later user message would end the turn with the call open.
@@ -836,6 +881,7 @@ import Testing
     #expect(built.request.messages[1].content == [.raw(toolUse)])
   }
 
+  @available(iOS 27.0, macOS 27.0, visionOS 27.0, watchOS 27.0, *)
   @Test func `a result whose call was trimmed from history replays as nothing`() throws {
     let answer: JSONValue = ["type": "text", "text": "Both done."]
     let transcript = Transcript(entries: [
@@ -850,6 +896,7 @@ import Testing
     #expect(built.request.messages[1].content == [.raw(answer)])
   }
 
+  @available(iOS 27.0, macOS 27.0, visionOS 27.0, watchOS 27.0, *)
   @Test func `a turn with nothing to replay produces no assistant message`() throws {
     let transcript = Transcript(entries: [
       .prompt(.init(segments: [.text(.init(content: "go"))])),
@@ -861,6 +908,7 @@ import Testing
     #expect(built.request.messages[0].content == [.text("go"), .text("hello?")])
   }
 
+  @available(iOS 27.0, macOS 27.0, visionOS 27.0, watchOS 27.0, *)
   @Test func `outputs of parallel tool calls share one user message`() throws {
     let transcript = Transcript(entries: [
       .prompt(.init(segments: [.text(.init(content: "go"))])),
@@ -883,6 +931,7 @@ import Testing
     )
   }
 
+  @available(iOS 27.0, macOS 27.0, visionOS 27.0, watchOS 27.0, *)
   @Test func `reasoning is not replayed when forced tool use disables thinking`() throws {
     var options = GenerationOptions()
     options.toolCallingMode = .required
@@ -906,6 +955,7 @@ import Testing
     #expect(built.request.messages[1].content == [.text("Hello.")])
   }
 
+  @available(iOS 27.0, macOS 27.0, visionOS 27.0, watchOS 27.0, *)
   @Test func `prompt images in history become image blocks`() throws {
     let transcript = Transcript(entries: [
       .prompt(
@@ -927,6 +977,7 @@ import Testing
     #expect(!source.data.isEmpty)
   }
 
+  @available(iOS 27.0, macOS 27.0, visionOS 27.0, watchOS 27.0, *)
   @Test func `tool output images become image blocks in the tool result`() throws {
     let transcript = Transcript(entries: [
       .prompt(.init(segments: [.text(.init(content: "Screenshot the page"))])),
@@ -959,6 +1010,7 @@ import Testing
     }
   }
 
+  @available(iOS 27.0, macOS 27.0, visionOS 27.0, watchOS 27.0, *)
   @Test func `maximumResponseTokens maps to max_tokens`() throws {
     var options = GenerationOptions()
     options.maximumResponseTokens = 512
@@ -970,6 +1022,7 @@ import Testing
     #expect(built.request.maxTokens == 512)
   }
 
+  @available(iOS 27.0, macOS 27.0, visionOS 27.0, watchOS 27.0, *)
   @Test func `an empty allowlist fails closed by omitting the tool`() throws {
     // `.allowing([])` permits no domain; the wire can't express that, so the
     // tool is dropped rather than silently becoming unrestricted.
@@ -988,6 +1041,7 @@ import Testing
     #expect(built.request.tools?[0].config["blocked_domains"] == nil)
   }
 
+  @available(iOS 27.0, macOS 27.0, visionOS 27.0, watchOS 27.0, *)
   @Test func `server tools encode with versioned type and flat config`() throws {
     let request = LanguageModelExecutorGenerationRequest.make(
       transcript: Transcript(entries: [.prompt(.init(segments: [.text(.init(content: "Search"))]))]
@@ -1028,12 +1082,14 @@ import Testing
 
   // MARK: - Fallbacks
 
+  @available(iOS 27.0, macOS 27.0, visionOS 27.0, watchOS 27.0, *)
   private var hi: LanguageModelExecutorGenerationRequest {
     .make(
       transcript: Transcript(entries: [.prompt(.init(segments: [.text(.init(content: "Hi"))]))])
     )
   }
 
+  @available(iOS 27.0, macOS 27.0, visionOS 27.0, watchOS 27.0, *)
   @Test func `fallbacks go on the request with the fallbacks opt-in`() throws {
     let built = try RequestBuilder.build(from: hi, model: .opus5, fallbacks: [.opus4_8])
     // Opus 4.8 takes everything the request sends, so its entry names it and
@@ -1050,12 +1106,14 @@ import Testing
     #expect(none.betas.isEmpty)
   }
 
+  @available(iOS 27.0, macOS 27.0, visionOS 27.0, watchOS 27.0, *)
   @Test func `the model's own fallback configuration goes as default`() throws {
     let built = try RequestBuilder.build(from: hi, model: .opus5, fallbacks: .serverDefault)
     #expect(built.request.fallbacks == .serverDefault)
     #expect(built.betas == [Fallbacks.defaultRoutingBetaHeader])
   }
 
+  @available(iOS 27.0, macOS 27.0, visionOS 27.0, watchOS 27.0, *)
   @Test func `a fallback gets the thinking and effort its own capabilities allow`() throws {
     var contextOptions = ContextOptions()
     contextOptions.reasoningLevel = .deep
@@ -1102,6 +1160,7 @@ import Testing
 
   // A fallback's `output_config` replaces the request's whole object, so it
   // has to carry the schema along with the fallback's own effort.
+  @available(iOS 27.0, macOS 27.0, visionOS 27.0, watchOS 27.0, *)
   @Test func `a fallback's output_config keeps the request's schema`() throws {
     var contextOptions = ContextOptions()
     contextOptions.reasoningLevel = .deep
@@ -1130,6 +1189,7 @@ import Testing
 
   // A fixed effort is a contract for the requested model. A fallback gets the
   // closest level it accepts, rather than a level it would reject.
+  @available(iOS 27.0, macOS 27.0, visionOS 27.0, watchOS 27.0, *)
   @Test func `a fixed effort gives each fallback the closest level it accepts`() throws {
     let model = ClaudeModel(
       id: "claude-all",
@@ -1164,6 +1224,7 @@ import Testing
     #expect(RequestBuilder.closestEffort(to: .max, in: []) == nil)
   }
 
+  @available(iOS 27.0, macOS 27.0, visionOS 27.0, watchOS 27.0, *)
   @Test func `sampling flows only when every model that may serve the request takes it`() throws {
     var options = GenerationOptions()
     options.temperature = 0.5
@@ -1189,6 +1250,7 @@ import Testing
     #expect(thinking.request.temperature == nil)
   }
 
+  @available(iOS 27.0, macOS 27.0, visionOS 27.0, watchOS 27.0, *)
   @Test func `a schema fails loudly when a fallback can't honor it`() throws {
     let request = LanguageModelExecutorGenerationRequest.make(
       transcript: Transcript(entries: [.prompt(.init(segments: [.text(.init(content: "Hi"))]))]),
@@ -1210,6 +1272,7 @@ import Testing
   // A `fallback` block marks where one model's thinking ends. The API rejects
   // a replay that keeps that thinking without the block, and it parses the
   // block only under the fallbacks opt-in.
+  @available(iOS 27.0, macOS 27.0, visionOS 27.0, watchOS 27.0, *)
   @Test func `a replayed handover stays in place and opts the request in`() throws {
     let thinking: JSONValue = ["type": "thinking", "thinking": "Hmm.", "signature": "c2ln"]
     let before: JSONValue = ["type": "text", "text": "Sure, here"]
@@ -1238,16 +1301,19 @@ import Testing
 }
 
 @Generable
+@available(iOS 27.0, macOS 27.0, visionOS 27.0, watchOS 27.0, *)
 private struct TestArgs {
   var city: String
 }
 
 @Generable
+@available(iOS 27.0, macOS 27.0, visionOS 27.0, watchOS 27.0, *)
 private struct NestedArgs {
   var inner: NestedInner
 }
 
 @Generable
+@available(iOS 27.0, macOS 27.0, visionOS 27.0, watchOS 27.0, *)
 private struct NestedInner {
   var value: String
 }

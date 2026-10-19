@@ -24,17 +24,20 @@ enum ErrorMapper {
       return map(attest)
     }
     #if canImport(DeviceCheck)
-    if error is DCError {
+    if let deviceCheck = error as? DCError {
       // Apple's attestation service failed (feature unsupported, server
       // unavailable); no credential was produced.
-      return ClaudeError.attestationFailed
+      let code = deviceCheck.code.rawValue
+      return ClaudeError.attestationFailed(
+        reason: "DeviceCheck error \(code): \(deviceCheck.localizedDescription)"
+      )
     }
     #endif
-    if error is KeychainError {
+    if let keychain = error as? KeychainError {
       // Keychain reads can fail before first unlock, leaving the
       // credential temporarily unreachable. Surface the typed attestation
       // failure rather than an internal error type.
-      return ClaudeError.attestationFailed
+      return ClaudeError.attestationFailed(reason: keychain.errorDescription)
     }
     if let url = error as? URLError, url.code == .timedOut {
       return LanguageModelError.timeout(.init(debugDescription: url.localizedDescription))
@@ -59,7 +62,9 @@ enum ErrorMapper {
       .attestationUnsupported
     case .keyInvalidated, .notYetAvailable, .conflictingBaseURL, .requestFailed,
       .malformedResponse:
-      .attestationFailed
+      // The internal description rides along as the reason so the failing
+      // step is visible without access to the internal type.
+      .attestationFailed(reason: error.errorDescription)
     }
   }
 
@@ -81,7 +86,9 @@ enum ErrorMapper {
         .init(contextSize: 0, tokenCount: 0, debugDescription: detail)
       )
     case .authentication:
-      return usesAppAttest ? ClaudeError.attestationFailed : ClaudeError.missingCredential
+      return usesAppAttest
+        ? ClaudeError.attestationFailed(reason: detail)
+        : ClaudeError.missingCredential
     case .permission, .api, .invalidRequest, .notFound, .other:
       // No honest framework-error equivalent — surface the API error itself.
       // `.permission` means the credential exists but isn't allowed here;

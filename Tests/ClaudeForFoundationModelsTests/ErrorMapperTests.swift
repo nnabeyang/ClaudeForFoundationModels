@@ -172,4 +172,28 @@ import Testing
       }
     }
   }
+
+  @available(iOS 27.0, macOS 27.0, visionOS 27.0, watchOS 27.0, *)
+  @Test func `attestationFailed carries the failing endpoint and status as its reason`() {
+    let mapped = ErrorMapper.map(
+      AppAttestError.requestFailed(endpoint: .register, status: 403, retryAfter: nil)
+    )
+    #expect(
+      mapped.errorDescription
+        == "App attestation failed to produce a credential. (App Attest register request failed (HTTP 403).)"
+    )
+  }
+
+  @available(iOS 27.0, macOS 27.0, visionOS 27.0, watchOS 27.0, *)
+  @Test func `rejected credential under appAttest carries the server message as its reason`() {
+    let mapped = ErrorMapper.map(
+      APIError(kind: .authentication, message: "invalid client", requestID: "req_1"),
+      usesAppAttest: true
+    )
+    guard case ClaudeError.attestationFailed(let reason) = mapped else {
+      Issue.record("expected attestationFailed, got \(mapped)")
+      return
+    }
+    #expect(reason == "invalid client (request_id: req_1)")
+  }
 }

@@ -95,22 +95,42 @@ struct EventTranslator: Sendable {
 
   /// Relays all channel writes so the first-write callback is handled in
   /// one place instead of at every send site.
-  private final class ChannelSink {
+  ///
+  /// A struct, not a class: Swift classes are registered with the
+  /// Objective-C runtime on every OS version, and enumerating classes
+  /// (`objc_copyClassList`, which Realm and XCTest call) completes their
+  /// metadata. A class with a stored property of an OS 27-only type crashes
+  /// there on earlier OS versions, even though the class is never used.
+  /// The mutable state lives in ``FirstWriteHook``, which holds no such type.
+  private struct ChannelSink {
     private let channel: LanguageModelExecutorGenerationChannel
-    private var pendingFirstWrite: (@Sendable () -> Void)?
+    private let firstWrite: FirstWriteHook
 
     init(
       _ channel: LanguageModelExecutorGenerationChannel,
       onFirstWrite: (@Sendable () -> Void)?
     ) {
       self.channel = channel
-      self.pendingFirstWrite = onFirstWrite
+      self.firstWrite = FirstWriteHook(onFirstWrite)
     }
 
     func send(_ event: LanguageModelExecutorGenerationChannel.Event) async {
-      pendingFirstWrite?()
-      pendingFirstWrite = nil
+      firstWrite.fire()
       await channel.send(event)
+    }
+  }
+
+  /// Invokes the first-write callback at most once.
+  private final class FirstWriteHook {
+    private var pending: (@Sendable () -> Void)?
+
+    init(_ pending: (@Sendable () -> Void)?) {
+      self.pending = pending
+    }
+
+    func fire() {
+      pending?()
+      pending = nil
     }
   }
 

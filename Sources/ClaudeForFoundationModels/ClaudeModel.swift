@@ -42,19 +42,27 @@ public struct ClaudeModel: Sendable, Hashable {
     public var structuredOutput: Bool
     /// Image content blocks.
     public var imageInput: Bool
+    /// `thinking: {"type": "disabled"}`. Sent when ``adaptiveThinking`` is
+    /// off: Sonnet 5 thinks adaptively when `thinking` is omitted, so leaving
+    /// the field out doesn't stop it. Sonnet 5.5, Opus 5.5, and Fable 5 / 5.1
+    /// reject `disabled` at any effort, and Opus 5 and Haiku 5.5 only accept
+    /// it at effort `high` or below, so their constants leave this off.
+    public var disabledThinking: Bool
 
     public init(
       samplingParams: Bool = false,
       effortLevels: Set<Effort> = [],
       adaptiveThinking: Bool = false,
       structuredOutput: Bool = false,
-      imageInput: Bool = false
+      imageInput: Bool = false,
+      disabledThinking: Bool = false
     ) {
       self.samplingParams = samplingParams
       self.effortLevels = effortLevels
       self.adaptiveThinking = adaptiveThinking
       self.structuredOutput = structuredOutput
       self.imageInput = imageInput
+      self.disabledThinking = disabledThinking
     }
   }
 
@@ -72,7 +80,8 @@ public struct ClaudeModel: Sendable, Hashable {
   // and Opus 5.5 keep it too, except that they also reject forced tool use
   // (`tool_choice` `any` / `tool`) — a `.required` tool-calling mode is a
   // contract, so it is sent as-is and the API error names the field. Sonnet
-  // 5.5 and Haiku 5.5 keep the Sonnet 5 request surface.
+  // 5.5 and Haiku 5.5 keep the Sonnet 5 request surface, except that they
+  // don't take `thinking: {"type": "disabled"}` the way Sonnet 5 does.
   public static let haiku5_5 = ClaudeModel(
     id: "claude-haiku-5-5",
     capabilities: .init(
@@ -134,7 +143,8 @@ public struct ClaudeModel: Sendable, Hashable {
       effortLevels: [.low, .medium, .high, .xhigh, .max],
       adaptiveThinking: true,
       structuredOutput: true,
-      imageInput: true
+      imageInput: true,
+      disabledThinking: true
     )
   )
   public static let opus4_8 = ClaudeModel(
@@ -143,7 +153,8 @@ public struct ClaudeModel: Sendable, Hashable {
       effortLevels: [.low, .medium, .high, .xhigh, .max],
       adaptiveThinking: true,
       structuredOutput: true,
-      imageInput: true
+      imageInput: true,
+      disabledThinking: true
     )
   )
   public static let opus4_7 = ClaudeModel(
@@ -152,7 +163,8 @@ public struct ClaudeModel: Sendable, Hashable {
       effortLevels: [.low, .medium, .high, .xhigh, .max],
       adaptiveThinking: true,
       structuredOutput: true,
-      imageInput: true
+      imageInput: true,
+      disabledThinking: true
     )
   )
   public static let opus4_6 = ClaudeModel(

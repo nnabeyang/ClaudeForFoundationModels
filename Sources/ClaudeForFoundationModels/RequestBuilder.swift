@@ -29,7 +29,7 @@ enum RequestBuilder {
 
     // Replayed thinking blocks are only required during tool use with
     // thinking active, and prior-turn thinking may always be omitted — so
-    // reasoning entries replay only on requests that send `thinking`.
+    // reasoning entries replay only on requests that turn thinking on.
     let toolChoice = toolChoice(for: request.generationOptions.toolCallingMode)
     // Forced tool use is a contract — the API rejects thinking alongside
     // it, so thinking yields for that request.
@@ -90,7 +90,7 @@ enum RequestBuilder {
       case .turn(let entries):
         let content = try assistantContent(
           of: entries,
-          replayThinking: thinkingConfig != nil,
+          replayThinking: thinkingConfig.map { $0 != .disabled } ?? false,
           pairing: pairing
         )
         if !content.isEmpty { messages.append(.init(role: .assistant, content: content)) }
@@ -551,13 +551,15 @@ enum RequestBuilder {
     )
   }
 
-  /// Adaptive thinking whenever the model accepts it; omitted otherwise —
-  /// sending `thinking` to a model that rejects it is a hard 400. Display is
-  /// pinned to summarized: every adaptive-thinking model accepts the field,
-  /// Sonnet 5 and Opus 4.7+ default to `omitted` (thinking blocks with empty
-  /// text), and display changes visibility only, not billing.
+  /// Adaptive thinking whenever the model accepts it. Otherwise `disabled`
+  /// when the model accepts that, and omitted when it doesn't — sending
+  /// `thinking` to a model that rejects it is a hard 400. Display is pinned
+  /// to summarized: every adaptive-thinking model accepts the field, Sonnet 5
+  /// and Opus 4.7+ default to `omitted` (thinking blocks with empty text),
+  /// and display changes visibility only, not billing.
   private static func thinking(for model: ClaudeModel) -> ThinkingConfig? {
-    model.capabilities.adaptiveThinking ? .adaptive(display: .summarized) : nil
+    if model.capabilities.adaptiveThinking { return .adaptive(display: .summarized) }
+    return model.capabilities.disabledThinking ? .disabled : nil
   }
 
   private static func resolvedEffort(

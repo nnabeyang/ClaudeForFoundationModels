@@ -241,6 +241,49 @@ import Testing
     #expect(built.request.thinking == nil)
   }
 
+  // Sonnet 5 thinks adaptively when `thinking` is omitted, so turning
+  // adaptive thinking off has to say so on the wire.
+  @available(iOS 27.0, macOS 27.0, visionOS 27.0, watchOS 27.0, *)
+  @Test func `adaptive thinking off sends disabled where the model accepts it`() throws {
+    let request = LanguageModelExecutorGenerationRequest.make(
+      transcript: Transcript(entries: [
+        .prompt(.init(segments: [.text(.init(content: "Hi"))]))
+      ])
+    )
+    var capabilities = ClaudeModel.sonnet5.capabilities
+    capabilities.adaptiveThinking = false
+    let model = ClaudeModel(id: ClaudeModel.sonnet5.id, capabilities: capabilities)
+    let built = try RequestBuilder.build(from: request, model: model)
+    #expect(built.request.thinking == .disabled)
+  }
+
+  @available(iOS 27.0, macOS 27.0, visionOS 27.0, watchOS 27.0, *)
+  @Test func `models that reject disabled thinking keep it off their constants`() {
+    for model: ClaudeModel in [.sonnet5_5, .opus5_5, .opus5, .fable5_1, .fable5, .haiku5_5] {
+      #expect(!model.capabilities.disabledThinking)
+    }
+    for model: ClaudeModel in [.sonnet5, .opus4_8, .opus4_7] {
+      #expect(model.capabilities.disabledThinking)
+    }
+  }
+
+  @available(iOS 27.0, macOS 27.0, visionOS 27.0, watchOS 27.0, *)
+  @Test func `recorded thinking is withheld when thinking is disabled`() throws {
+    let transcript = Transcript(entries: [
+      .prompt(.init(segments: [.text(.init(content: "go"))])),
+      recordedReasoning(["type": "thinking", "thinking": "hm", "signature": "c2ln"], at: 0),
+      recordedResponse([["type": "text", "text": "ok"]], from: 1),
+      .prompt(.init(segments: [.text(.init(content: "again"))])),
+    ])
+    let request = LanguageModelExecutorGenerationRequest.make(transcript: transcript)
+    var capabilities = ClaudeModel.sonnet5.capabilities
+    capabilities.adaptiveThinking = false
+    let model = ClaudeModel(id: ClaudeModel.sonnet5.id, capabilities: capabilities)
+    let built = try RequestBuilder.build(from: request, model: model)
+    #expect(built.request.thinking == .disabled)
+    #expect(built.request.messages[1].content == [.raw(["type": "text", "text": "ok"])])
+  }
+
   // Issue #7: on Sonnet 5 and Opus 4.7+ `thinking.display` defaults to
   // omitted — thinking blocks stream with empty text and reasoning entries
   // end up with no segments. Every adaptive-thinking model accepts the field,
@@ -292,13 +335,19 @@ import Testing
   @available(iOS 27.0, macOS 27.0, visionOS 27.0, watchOS 27.0, *)
   @Test func `sonnet 5.5 carries its API ID and the Sonnet 5 request surface`() {
     #expect(ClaudeModel.sonnet5_5.id == "claude-sonnet-5-5")
-    #expect(ClaudeModel.sonnet5_5.capabilities == ClaudeModel.sonnet5.capabilities)
+    // Only Sonnet 5 takes `thinking: {"type": "disabled"}`.
+    var expected = ClaudeModel.sonnet5.capabilities
+    expected.disabledThinking = false
+    #expect(ClaudeModel.sonnet5_5.capabilities == expected)
   }
 
   @available(iOS 27.0, macOS 27.0, visionOS 27.0, watchOS 27.0, *)
   @Test func `haiku 5.5 carries its API ID and the Sonnet 5 request surface`() {
     #expect(ClaudeModel.haiku5_5.id == "claude-haiku-5-5")
-    #expect(ClaudeModel.haiku5_5.capabilities == ClaudeModel.sonnet5.capabilities)
+    // Only Sonnet 5 takes `thinking: {"type": "disabled"}`.
+    var expected = ClaudeModel.sonnet5.capabilities
+    expected.disabledThinking = false
+    #expect(ClaudeModel.haiku5_5.capabilities == expected)
   }
 
   @available(iOS 27.0, macOS 27.0, visionOS 27.0, watchOS 27.0, *)
